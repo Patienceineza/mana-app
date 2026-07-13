@@ -75,6 +75,7 @@ const dict = {
   goToInspections: { en: 'Go to Inspections →', af: 'Gaan na Inspeksies →', zu: 'Yiya Ekuhlolweni →' },
   viewTodaysRoute: { en: "View Today's Route →", af: 'Bekyk Vandag se Roete →', zu: 'Buka Umzila Wanamuhla →' },
   dropOffSequence: { en: 'Drop-off Sequence', af: 'Aflaai Volgorde', zu: 'Ukulandelana Kokulethwa' },
+  noRouteToday: { en: 'No route planned for today yet', af: 'Nog geen roete vir vandag beplan nie', zu: 'Akukho mzila ohlelwe namuhla okwamanje' },
   qualityPhotos: { en: 'Quality Photos', af: 'Kwaliteitfoto\'s', zu: 'Izithombe Zekhwalithi' },
   weightVerification: { en: 'Weight Verification', af: 'Gewigsverifikasie', zu: 'Ukuqinisekiswa Kwesisindo' },
   decision: { en: 'Decision', af: 'Besluit', zu: 'Isinqumo' },

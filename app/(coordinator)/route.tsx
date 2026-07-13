@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { api, imageUrl } from '@/lib/api';
+import { api, ApiError, imageUrl } from '@/lib/api';
 import { fontFamily, radii, spacing, TAB_BAR_CLEARANCE, ThemeColors } from '@/constants/theme';
 import type { RouteToday } from '@/types';
 
@@ -15,7 +15,9 @@ export default function CoordinatorRouteScreen() {
   const [route, setRoute] = useState<RouteToday | null>(null);
 
   useEffect(() => {
-    api.get<RouteToday>('/routes/today').then(setRoute);
+    api.get<RouteToday>('/routes/today').then(setRoute).catch((err) => {
+      if (!(err instanceof ApiError && err.status === 404)) throw err;
+    });
   }, []);
 
   return (
@@ -29,6 +31,7 @@ export default function CoordinatorRouteScreen() {
       </View>
 
       <Text style={styles.sectionLabel}>{t('dropOffSequence')}</Text>
+      {(route?.stops.length ?? 0) === 0 && <Text style={styles.empty}>{t('noRouteToday')}</Text>}
       {route?.stops.map((stop) => (
         <View key={stop.seq} style={styles.row}>
           <View style={styles.seqBadge}>
@@ -59,4 +62,5 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
   stopName: { fontFamily: fontFamily.bold, fontSize: 13, color: colors.text },
   stopMeta: { fontFamily: fontFamily.regular, fontSize: 11, color: colors.coordMuted },
   dispatch: { fontFamily: fontFamily.semiBold, fontSize: 12, color: colors.coordMuted },
+  empty: { fontFamily: fontFamily.regular, fontSize: 12.5, color: colors.coordMuted },
 });

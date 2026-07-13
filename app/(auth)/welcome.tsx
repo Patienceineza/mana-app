@@ -14,10 +14,6 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       {/* Premium Ambient Concentric Background Glows */}
-      <View style={styles.glowAmberOuter} />
-      <View style={styles.glowAmberMiddle} />
-      <View style={styles.glowAmberInner} />
-
       <View style={styles.glowGreenOuter} />
       <View style={styles.glowGreenMiddle} />
       <View style={styles.glowGreenInner} />
@@ -26,10 +22,6 @@ export default function WelcomeScreen() {
         {/* Top Header Row */}
         <View style={styles.header}>
           <Image source={require('@/assets/icon.png')} style={styles.logo} resizeMode="contain" />
-          <Pressable onPress={() => router.push('/(auth)/login')} style={styles.demoButton}>
-            <Text style={styles.demoText}>Demo</Text>
-            <Feather name="chevron-right" size={12} color={colors.textFaint} style={styles.demoChevron} />
-          </Pressable>
         </View>
 
         <View style={styles.spacer} />
@@ -85,36 +77,6 @@ const makeStyles = (colors: ThemeColors, isDark: boolean) =>
       paddingHorizontal: spacing.xl,
       justifyContent: 'space-between',
     },
-    glowAmberOuter: {
-      position: 'absolute',
-      top: -200,
-      right: -250,
-      width: 600,
-      height: 600,
-      borderRadius: 300,
-      backgroundColor: colors.amber,
-      opacity: isDark ? 0.04 : 0.02,
-    },
-    glowAmberMiddle: {
-      position: 'absolute',
-      top: -100,
-      right: -150,
-      width: 400,
-      height: 400,
-      borderRadius: 200,
-      backgroundColor: colors.amber,
-      opacity: isDark ? 0.08 : 0.04,
-    },
-    glowAmberInner: {
-      position: 'absolute',
-      top: 0,
-      right: -50,
-      width: 200,
-      height: 200,
-      borderRadius: 100,
-      backgroundColor: colors.amber,
-      opacity: isDark ? 0.15 : 0.07,
-    },
     glowGreenOuter: {
       position: 'absolute',
       top: 100,
@@ -148,7 +110,6 @@ const makeStyles = (colors: ThemeColors, isDark: boolean) =>
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
       height: 50,
       marginTop: spacing.sm,
     },
@@ -156,22 +117,6 @@ const makeStyles = (colors: ThemeColors, isDark: boolean) =>
       width: 36,
       height: 36,
       borderRadius: radii.md,
-    },
-    demoButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-      paddingVertical: 6,
-      paddingHorizontal: 12,
-      borderRadius: radii.pill,
-    },
-    demoText: {
-      fontFamily: fontFamily.semiBold,
-      fontSize: 12,
-      color: colors.textFaint,
-    },
-    demoChevron: {
-      marginLeft: 2,
     },
     spacer: {
       flex: 1,
@@ -232,21 +177,21 @@ const makeStyles = (colors: ThemeColors, isDark: boolean) =>
     },
     registerButton: {
       flex: 1,
-      backgroundColor: colors.text,
+      backgroundColor: colors.green,
       borderRadius: radii.xl,
       paddingVertical: 16,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000',
+      shadowColor: colors.green,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: isDark ? 0.2 : 0.08,
+      shadowOpacity: isDark ? 0.25 : 0.15,
       shadowRadius: 4,
       elevation: 2,
     },
     registerButtonText: {
       fontFamily: fontFamily.bold,
       fontSize: 12.5,
-      color: colors.bg,
+      color: '#FFFFFF',
       letterSpacing: 0.8,
     },
   });
