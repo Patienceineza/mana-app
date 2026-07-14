@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FilterChips } from '@/components/FilterChips';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useLanguage } from '@/context/LanguageContext';
@@ -16,6 +17,15 @@ const STOCK_OPTIONS: { key: Product['stock']; label: string }[] = [
   { key: 'low', label: 'Low' },
 ];
 
+type StockFilter = '' | Product['stock'];
+
+const STOCK_FILTER_OPTIONS: { value: StockFilter; label: string }[] = [
+  { value: '', label: 'All' },
+  { value: 'season', label: 'In Season' },
+  { value: 'limited', label: 'Limited' },
+  { value: 'low', label: 'Low Stock' },
+];
+
 export default function FarmerListingsScreen() {
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -23,6 +33,8 @@ export default function FarmerListingsScreen() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [crops, setCrops] = useState<Crop[]>([]);
+  const [search, setSearch] = useState('');
+  const [stockFilter, setStockFilter] = useState<StockFilter>('');
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -31,9 +43,13 @@ export default function FarmerListingsScreen() {
   const [imgPath, setImgPath] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (query: string, stockStatus: StockFilter) => {
+    const params = new URLSearchParams();
+    if (query) params.set('search', query);
+    if (stockStatus) params.set('stockStatus', stockStatus);
+    const qs = params.toString();
     const [mine, cropList] = await Promise.all([
-      api.get<Product[]>('/products/mine'),
+      api.get<Product[]>(`/products/mine${qs ? `?${qs}` : ''}`),
       api.get<Crop[]>('/crops'),
     ]);
     setProducts(mine);
@@ -41,8 +57,9 @@ export default function FarmerListingsScreen() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    const timer = setTimeout(() => load(search, stockFilter), 250);
+    return () => clearTimeout(timer);
+  }, [search, stockFilter, load]);
 
   const submit = async () => {
     if (!name || !price) return;
@@ -62,7 +79,7 @@ export default function FarmerListingsScreen() {
       setStock('season');
       setImgPath(null);
       setShowForm(false);
-      await load();
+      await load(search, stockFilter);
     } finally {
       setSubmitting(false);
     }
@@ -76,6 +93,17 @@ export default function FarmerListingsScreen() {
           <Pressable onPress={() => setShowForm((v) => !v)}>
             <Text style={styles.newLink}>{showForm ? 'Cancel' : t('newListing')}</Text>
           </Pressable>
+        </View>
+
+        <TextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search your listings..."
+          placeholderTextColor={colors.textFainter}
+          style={[styles.input, { marginBottom: spacing.sm }]}
+        />
+        <View style={{ marginBottom: spacing.lg }}>
+          <FilterChips options={STOCK_FILTER_OPTIONS} value={stockFilter} onChange={setStockFilter} />
         </View>
 
         {showForm && (
@@ -135,7 +163,9 @@ export default function FarmerListingsScreen() {
           </View>
         )}
 
-        {products.length === 0 && !showForm && <Text style={styles.empty}>{t('noListingsYet')}</Text>}
+        {products.length === 0 && !showForm && (
+          <Text style={styles.empty}>{search || stockFilter ? 'No listings match your filters.' : t('noListingsYet')}</Text>
+        )}
 
         {products.map((p) => {
           const meta = stockMeta[p.stock];

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FilterChips } from '@/components/FilterChips';
 import { ProductCard } from '@/components/ProductCard';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +14,15 @@ import { api, imageUrl } from '@/lib/api';
 import { fontFamily, radii, spacing, TAB_BAR_CLEARANCE, ThemeColors } from '@/constants/theme';
 import type { Product } from '@/types';
 
+type StockFilter = '' | 'season' | 'limited' | 'low';
+
+const STOCK_FILTER_OPTIONS: { value: StockFilter; label: string }[] = [
+  { value: '', label: 'All' },
+  { value: 'season', label: 'In Season' },
+  { value: 'limited', label: 'Limited' },
+  { value: 'low', label: 'Low Stock' },
+];
+
 export default function MarketScreen() {
   const { user } = useAuth();
   const { refresh: refreshCart } = useCart();
@@ -20,21 +30,26 @@ export default function MarketScreen() {
   const { t } = useLanguage();
   const styles = makeStyles(colors);
   const [search, setSearch] = useState('');
+  const [stockFilter, setStockFilter] = useState<StockFilter>('');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadProducts = useCallback(async (query: string) => {
-    const res = await api.get<Product[]>(`/products${query ? `?search=${encodeURIComponent(query)}` : ''}`);
+  const loadProducts = useCallback(async (query: string, stock: StockFilter) => {
+    const params = new URLSearchParams();
+    if (query) params.set('search', query);
+    if (stock) params.set('stockStatus', stock);
+    const qs = params.toString();
+    const res = await api.get<Product[]>(`/products${qs ? `?${qs}` : ''}`);
     setProducts(res);
   }, []);
 
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
-      loadProducts(search).finally(() => setLoading(false));
+      loadProducts(search, stockFilter).finally(() => setLoading(false));
     }, 250);
     return () => clearTimeout(timer);
-  }, [search, loadProducts]);
+  }, [search, stockFilter, loadProducts]);
 
   useFocusEffect(
     useCallback(() => {
@@ -44,7 +59,7 @@ export default function MarketScreen() {
 
   const mutateCart = async (action: () => Promise<void>) => {
     await action();
-    await Promise.all([loadProducts(search), refreshCart()]);
+    await Promise.all([loadProducts(search, stockFilter), refreshCart()]);
   };
 
   const toggleFavorite = async (product: Product) => {
@@ -53,7 +68,7 @@ export default function MarketScreen() {
     } else {
       await api.post(`/favorites/${product.id}`);
     }
-    await loadProducts(search);
+    await loadProducts(search, stockFilter);
   };
 
   return (
@@ -72,6 +87,9 @@ export default function MarketScreen() {
           placeholderTextColor={colors.textFainter}
           style={styles.search}
         />
+        <View style={{ marginTop: spacing.sm }}>
+          <FilterChips options={STOCK_FILTER_OPTIONS} value={stockFilter} onChange={setStockFilter} />
+        </View>
       </View>
 
       <FlatList
@@ -81,7 +99,7 @@ export default function MarketScreen() {
         columnWrapperStyle={{ gap: spacing.md }}
         contentContainerStyle={styles.listContent}
         refreshing={loading}
-        onRefresh={() => loadProducts(search)}
+        onRefresh={() => loadProducts(search, stockFilter)}
         ListHeaderComponent={
           <>
             <View style={styles.hero}>
